@@ -1,0 +1,62 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inhalt der Datenbank</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Inhalt der Datenbank</h1>
+    <form id="passwordForm">
+        <label for="password">Passwort:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Anzeigen</button>
+    </form>
+    <div id="content"></div>
+
+    <script>
+        document.getElementById('passwordForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/check-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Netzwerkantwort war nicht ok');
+                }
+
+                const data = await response.json();
+                const contentDiv = document.getElementById('content');
+
+                if (data.success) {
+                    let output = '<h2>Lorem ipsum dolor sit amet</h2>';
+                    output += '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>';
+                    
+                    output += data.image;
+                    
+                    output += '<h2>Passwortgeschützer Inhalt:</h2>';
+                    data.streets.forEach(street => {
+                        output += `<p>${street}</p>`;
+                    });
+
+                    contentDiv.innerHTML = output;
+                } else {
+                    contentDiv.innerHTML = `<p class="error">${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Inhalte:', error);
+                document.getElementById('content').innerHTML = `<p class="error">Ein Fehler ist aufgetreten: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
